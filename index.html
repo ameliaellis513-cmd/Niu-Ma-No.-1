@@ -15,7 +15,7 @@ h1 { font-size: 24px; font-weight: 700; color: #1a1a2e; text-align: center; padd
 .filter-tip { font-size: 12px; font-weight: 400; color: #fff; background: #52c41a; border-radius: 4px; padding: 2px 10px; }
 .upload-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
 .upload-col { flex: 1; min-width: 240px; display: flex; flex-direction: column; gap: 10px; }
-.upload-box { flex: 1; min-width: 240px; border: 2px dashed #d0d7de; border-radius: 10px; padding: 28px 20px; text-align: center; transition: border-color 0.2s, background 0.2s; position: relative; }
+.upload-box { border: 2px dashed #d0d7de; border-radius: 10px; padding: 28px 20px; text-align: center; transition: border-color 0.2s, background 0.2s; position: relative; }
 .upload-box:hover { border-color: #4f8ef7; background: #f7f9ff; }
 .upload-box.loaded { border-color: #52c41a; background: #f6ffed; }
 .upload-box input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
@@ -42,12 +42,11 @@ h1 { font-size: 24px; font-weight: 700; color: #1a1a2e; text-align: center; padd
 .export-actions { display: flex; gap: 8px; }
 .btn-export { padding: 7px 16px; background: #fff; color: #4f8ef7; border: 1px solid #4f8ef7; border-radius: 6px; font-size: 13px; cursor: pointer; transition: background 0.2s, color 0.2s; }
 .btn-export:hover { background: #4f8ef7; color: #fff; }
-.table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #f0f0f0; max-height: 520px; overflow: auto; }
+.table-wrap { max-height: 520px; overflow: auto; border-radius: 8px; border: 1px solid #f0f0f0; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; table-layout: fixed; }
 thead th { background: #fafafa; padding: 10px 14px; text-align: left; font-weight: 600; color: #555; border-bottom: 1px solid #e8e8e8; position: sticky; top: 0; z-index: 2; }
-thead .filter-row th { top: 37px; padding: 4px 6px; background: #f5f7fa; }
 tbody tr:hover { background: #f7f9ff; }
-tbody td { padding: 9px 14px; border-bottom: 1px solid #f5f5f5; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: pre-line; vertical-align: top; }
+tbody td { padding: 9px 14px; border-bottom: 1px solid #f5f5f5; color: #333; overflow: hidden; text-overflow: ellipsis; vertical-align: top; }
 .tag-country { display: inline-block; background: #e6f4ff; color: #1677ff; border-radius: 4px; padding: 1px 8px; font-size: 12px; font-weight: 600; }
 .tag-status { display: inline-block; background: #fff7e6; color: #d46b08; border-radius: 4px; padding: 1px 8px; font-size: 12px; font-weight: 600; }
 .tag-warn { display: inline-block; background: #fff2e8; color: #d4380d; border-radius: 4px; padding: 1px 8px; font-size: 12px; font-weight: 600; }
@@ -64,8 +63,6 @@ tbody td { padding: 9px 14px; border-bottom: 1px solid #f5f5f5; color: #333; ove
 .col-item.drag-over { background: #e6f4ff; border-top: 2px solid #4f8ef7; }
 .drag-handle { color: #bbb; font-size: 16px; cursor: grab; }
 .col-label { flex: 1; font-size: 13px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.col-filter { width: 100%; padding: 4px 6px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 12px; outline: none; box-sizing: border-box; }
-.col-filter:focus { border-color: #4f8ef7; }
 .col-width-input { width: 52px; padding: 3px 5px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 12px; text-align: right; outline: none; flex-shrink: 0; }
 .col-width-input:focus { border-color: #4f8ef7; }
 .col-width-unit { font-size: 11px; color: #aaa; flex-shrink: 0; }
@@ -83,6 +80,16 @@ tbody td { padding: 9px 14px; border-bottom: 1px solid #f5f5f5; color: #333; ove
 .hist-del { background: none; border: none; color: #ccc; cursor: pointer; font-size: 13px; padding: 2px 4px; border-radius: 4px; flex-shrink: 0; }
 .hist-del:hover { color: #ff4d4f; background: #fff1f0; }
 .hist-empty { font-size: 12px; color: #ccc; padding: 10px 12px; }
+.filter-btn { background: none; border: 1px solid transparent; border-radius: 3px; font-size: 10px; color: #aaa; cursor: pointer; padding: 1px 4px; flex-shrink: 0; line-height: 1; transition: color 0.15s, border-color 0.15s; }
+.filter-btn:hover { color: #4f8ef7; border-color: #4f8ef7; }
+.filter-btn.filter-active { color: #4f8ef7; border-color: #4f8ef7; background: #e6f4ff; }
+.filter-dropdown { position: absolute; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,0.13); z-index: 3000; min-width: 200px; max-width: 320px; padding: 8px 0 4px; display: flex; flex-direction: column; }
+.filter-dd-search { margin: 0 10px 6px; padding: 5px 8px; border: 1px solid #d9d9d9; border-radius: 5px; font-size: 13px; outline: none; }
+.filter-dd-search:focus { border-color: #4f8ef7; }
+.filter-dd-items { max-height: 240px; overflow-y: auto; }
+.filter-dd-item { display: flex; align-items: center; gap: 7px; padding: 5px 12px; font-size: 13px; cursor: pointer; user-select: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.filter-dd-item:hover { background: #f5f7ff; }
+.filter-dd-item input[type="checkbox"] { flex-shrink: 0; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -94,11 +101,7 @@ tbody td { padding: 9px 14px; border-bottom: 1px solid #f5f5f5; color: #333; ove
         <div class="upload-col">
           <div class="upload-box" id="order-upload-box">
             <input type="file" id="order-file" accept=".xlsx,.xls,.csv" />
-            <label for="order-file">
-              <span class="icon">📋</span>
-              <span class="label">点击上传订单数据</span>
-              <span class="hint">.xlsx / .xls / .csv</span>
-            </label>
+            <label for="order-file"><span class="icon">📋</span><span class="label">点击上传订单数据</span><span class="hint">.xlsx / .xls / .csv</span></label>
             <div class="file-status" id="order-status">未上传</div>
           </div>
           <div class="hist-box"><div class="hist-title">历史记录</div><div id="order-history"></div></div>
@@ -106,11 +109,7 @@ tbody td { padding: 9px 14px; border-bottom: 1px solid #f5f5f5; color: #333; ove
         <div class="upload-col">
           <div class="upload-box" id="stock-upload-box">
             <input type="file" id="stock-file" accept=".xlsx,.xls,.csv" />
-            <label for="stock-file">
-              <span class="icon">📦</span>
-              <span class="label">点击上传备货数据</span>
-              <span class="hint">.xlsx / .xls / .csv</span>
-            </label>
+            <label for="stock-file"><span class="icon">📦</span><span class="label">点击上传备货数据</span><span class="hint">.xlsx / .xls / .csv</span></label>
             <div class="file-status" id="stock-status">未上传</div>
           </div>
           <div class="hist-box"><div class="hist-title">历史记录</div><div id="stock-history"></div></div>
@@ -151,233 +150,228 @@ tbody td { padding: 9px 14px; border-bottom: 1px solid #f5f5f5; color: #333; ove
   </div>
   <div id="col-panel">
     <div id="col-panel-inner">
-      <div class="col-panel-header">
-        <span>列设置（拖拽排序 / 勾选显示）</span>
-        <button onclick="closeColPanel()">✕</button>
-      </div>
+      <div class="col-panel-header"><span>列设置（拖拽排序 / 勾选显示）</span><button onclick="closeColPanel()">✕</button></div>
       <div id="col-panel-list"></div>
     </div>
   </div>
   <script>
 const COUNTRY_KEYWORDS = [
-  { keywords: ['菲律宾', '菲律'], country: '菲律宾' },
-  { keywords: ['马来西亚', '马来'], country: '马来西亚' },
-  { keywords: ['泰国', 'Lazada改派Flash', 'lazada改派flash'], country: '泰国' },
-  { keywords: ['印尼', '印度尼西亚'], country: '印度尼西亚' },
-  { keywords: ['越南'], country: '越南' },
-  { keywords: ['新加坡'], country: '新加坡' },
-  { keywords: ['美国', 'US', 'FBA-US'], country: '美国' },
-  { keywords: ['英国', 'UK', 'FBA-UK'], country: '英国' },
-  { keywords: ['德国', 'DE', 'FBA-DE'], country: '德国' },
-  { keywords: ['日本', 'JP', 'FBA-JP'], country: '日本' },
-  { keywords: ['澳大利亚', '澳洲'], country: '澳大利亚' },
-  { keywords: ['法国', 'FR'], country: '法国' },
-  { keywords: ['西班牙', 'ES'], country: '西班牙' },
-  { keywords: ['意大利', 'IT'], country: '意大利' },
-  { keywords: ['加拿大', 'CA'], country: '加拿大' },
+  {keywords:['菲律宾','菲律'],country:'菲律宾'},{keywords:['马来西亚','马来'],country:'马来西亚'},
+  {keywords:['泰国','Lazada改派Flash','lazada改派flash'],country:'泰国'},{keywords:['印尼','印度尼西亚'],country:'印度尼西亚'},
+  {keywords:['越南'],country:'越南'},{keywords:['新加坡'],country:'新加坡'},{keywords:['美国','US','FBA-US'],country:'美国'},
+  {keywords:['英国','UK','FBA-UK'],country:'英国'},{keywords:['德国','DE','FBA-DE'],country:'德国'},
+  {keywords:['日本','JP','FBA-JP'],country:'日本'},{keywords:['澳大利亚','澳洲'],country:'澳大利亚'},
+  {keywords:['法国','FR'],country:'法国'},{keywords:['西班牙','ES'],country:'西班牙'},
+  {keywords:['意大利','IT'],country:'意大利'},{keywords:['加拿大','CA'],country:'加拿大'},
 ];
 function detectCountry(channel) {
   if (!channel) return '';
-  for (const { keywords, country } of COUNTRY_KEYWORDS) {
-    for (const kw of keywords) { if (channel.includes(kw)) return country; }
-  }
+  for (const {keywords,country} of COUNTRY_KEYWORDS) for (const kw of keywords) if (channel.includes(kw)) return country;
   return channel;
 }
-let orderData = [], stockData = [];
+let orderData=[],stockData=[];
 function readExcel(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      try {
-        const wb = XLSX.read(e.target.result, { type: 'array', cellDates: true });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        resolve(XLSX.utils.sheet_to_json(ws, { defval: '' }));
-      } catch (err) { reject(err); }
-    };
-    reader.onerror = reject;
-    reader.readAsArrayBuffer(file);
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=e=>{try{const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});resolve(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}));}catch(err){reject(err);}};
+    reader.onerror=reject; reader.readAsArrayBuffer(file);
   });
 }
-function normalize(val) { return String(val ?? '').trim().toLowerCase(); }
-function multiMatch(input, fieldVal) {
-  if (!input.trim()) return true;
-  const terms = input.split(/[,，\s]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
-  return terms.some(t => normalize(fieldVal).includes(t));
-}
-function fuzzyMatch(input, fieldVal) {
-  if (!input.trim()) return true;
-  return normalize(fieldVal).includes(normalize(input));
-}
-const HISTORY_KEY_ORDER = 'history_order', HISTORY_KEY_STOCK = 'history_stock', MAX_HISTORY = 10;
-function saveHistory(target, fileName, rows) {
-  const key = target === 'order' ? HISTORY_KEY_ORDER : HISTORY_KEY_STOCK;
-  let list = getHistory(target).filter(h => h.fileName !== fileName);
-  list.unshift({ fileName, rows, savedAt: new Date().toLocaleString() });
-  if (list.length > MAX_HISTORY) list = list.slice(0, MAX_HISTORY);
-  try { localStorage.setItem(key, JSON.stringify(list)); }
-  catch(e) { list = list.slice(0, 3); try { localStorage.setItem(key, JSON.stringify(list)); } catch(_) {} }
+function normalize(val){return String(val??'').trim().toLowerCase();}
+function multiMatch(input,fieldVal){if(!input.trim())return true;return input.split(/[,，\s]+/).map(s=>s.trim().toLowerCase()).filter(Boolean).some(t=>normalize(fieldVal).includes(t));}
+function fuzzyMatch(input,fieldVal){if(!input.trim())return true;return normalize(fieldVal).includes(normalize(input));}
+const HISTORY_KEY_ORDER='history_order',HISTORY_KEY_STOCK='history_stock',MAX_HISTORY=10;
+function saveHistory(target,fileName,rows){
+  const key=target==='order'?HISTORY_KEY_ORDER:HISTORY_KEY_STOCK;
+  let list=getHistory(target).filter(h=>h.fileName!==fileName);
+  list.unshift({fileName,rows,savedAt:new Date().toLocaleString()});
+  if(list.length>MAX_HISTORY)list=list.slice(0,MAX_HISTORY);
+  try{localStorage.setItem(key,JSON.stringify(list));}catch(e){list=list.slice(0,3);try{localStorage.setItem(key,JSON.stringify(list));}catch(_){}}
   renderHistory(target);
 }
-function getHistory(target) {
-  const key = target === 'order' ? HISTORY_KEY_ORDER : HISTORY_KEY_STOCK;
-  try { return JSON.parse(localStorage.getItem(key) ?? '[]'); } catch { return []; }
-}
-function loadFromHistory(target, idx) {
-  const item = getHistory(target)[idx];
-  if (!item) return;
-  if (target === 'order') { orderData = item.rows; document.getElementById('order-status').textContent = `✓ ${item.fileName}（${item.rows.length} 行）`; document.getElementById('order-upload-box').classList.add('loaded'); }
-  else { stockData = item.rows; document.getElementById('stock-status').textContent = `✓ ${item.fileName}（${item.rows.length} 行）`; document.getElementById('stock-upload-box').classList.add('loaded'); }
+function getHistory(target){try{return JSON.parse(localStorage.getItem(target==='order'?HISTORY_KEY_ORDER:HISTORY_KEY_STOCK)??'[]');}catch{return[];}}
+function loadFromHistory(target,idx){
+  const item=getHistory(target)[idx]; if(!item)return;
+  if(target==='order'){orderData=item.rows;document.getElementById('order-status').textContent=`✓ ${item.fileName}（${item.rows.length} 行）`;document.getElementById('order-upload-box').classList.add('loaded');}
+  else{stockData=item.rows;document.getElementById('stock-status').textContent=`✓ ${item.fileName}（${item.rows.length} 行）`;document.getElementById('stock-upload-box').classList.add('loaded');}
   checkReady();
 }
-function deleteHistory(target, idx) {
-  const key = target === 'order' ? HISTORY_KEY_ORDER : HISTORY_KEY_STOCK;
-  const list = getHistory(target); list.splice(idx, 1);
-  localStorage.setItem(key, JSON.stringify(list)); renderHistory(target);
+function deleteHistory(target,idx){const key=target==='order'?HISTORY_KEY_ORDER:HISTORY_KEY_STOCK;const list=getHistory(target);list.splice(idx,1);localStorage.setItem(key,JSON.stringify(list));renderHistory(target);}
+function renderHistory(target){
+  const list=getHistory(target),el=document.getElementById(`${target}-history`);
+  if(!list.length){el.innerHTML='<div class="hist-empty">暂无历史记录</div>';return;}
+  el.innerHTML=list.map((h,i)=>`<div class="hist-item"><div class="hist-info" onclick="loadFromHistory('${target}',${i})" title="点击加载"><span class="hist-name">${h.fileName}</span><span class="hist-meta">${h.rows.length} 行 · ${h.savedAt}</span></div><button class="hist-del" onclick="deleteHistory('${target}',${i})" title="删除">✕</button></div>`).join('');
 }
-function renderHistory(target) {
-  const list = getHistory(target), el = document.getElementById(`${target}-history`);
-  if (!list.length) { el.innerHTML = '<div class="hist-empty">暂无历史记录</div>'; return; }
-  el.innerHTML = list.map((h, i) => `<div class="hist-item"><div class="hist-info" onclick="loadFromHistory('${target}',${i})" title="点击加载"><span class="hist-name">${h.fileName}</span><span class="hist-meta">${h.rows.length} 行 · ${h.savedAt}</span></div><button class="hist-del" onclick="deleteHistory('${target}',${i})" title="删除">✕</button></div>`).join('');
+async function handleFileUpload(inputId,statusId,boxId,target){
+  const input=document.getElementById(inputId),file=input.files[0]; if(!file)return;
+  const statusEl=document.getElementById(statusId),boxEl=document.getElementById(boxId);
+  statusEl.textContent='解析中...';
+  try{const rows=await readExcel(file);if(target==='order')orderData=rows;else stockData=rows;statusEl.textContent=`✓ ${file.name}（${rows.length} 行）`;boxEl.classList.add('loaded');saveHistory(target,file.name,rows);checkReady();}
+  catch(e){statusEl.textContent='解析失败，请检查文件格式';console.error(e);}
 }
-async function handleFileUpload(inputId, statusId, boxId, target) {
-  const input = document.getElementById(inputId), file = input.files[0];
-  if (!file) return;
-  const statusEl = document.getElementById(statusId), boxEl = document.getElementById(boxId);
-  statusEl.textContent = '解析中...';
-  try {
-    const rows = await readExcel(file);
-    if (target === 'order') orderData = rows; else stockData = rows;
-    statusEl.textContent = `✓ ${file.name}（${rows.length} 行）`;
-    boxEl.classList.add('loaded'); saveHistory(target, file.name, rows); checkReady();
-  } catch (e) { statusEl.textContent = '解析失败，请检查文件格式'; console.error(e); }
-}
-function checkReady() { document.getElementById('btn-query').disabled = !(orderData.length > 0 && stockData.length > 0); }
-function doQuery() {
-  const qOrderId=document.getElementById('q-order-id').value, qProductId=document.getElementById('q-product-id').value,
-    qProductName=document.getElementById('q-product-name').value, qSku=document.getElementById('q-sku').value,
-    qCountry=document.getElementById('q-country').value.trim().toLowerCase(), qTeam=document.getElementById('q-team').value,
-    qShop=document.getElementById('q-shop').value, qStatus=document.getElementById('q-status').value;
-  const filteredOrders = orderData.filter(row => {
-    if (normalize(row['下架状态']??'') !== '未下架&未改派') return false;
-    if (normalize(row['改派标签']??'') !== '是') return false;
-    if (!multiMatch(qOrderId, row['订单编号'])) return false;
-    if (!multiMatch(qProductId, row['产品ID'])) return false;
-    if (!fuzzyMatch(qProductName, row['品名'])) return false;
-    if (!multiMatch(qSku, row['SKU'])) return false;
-    if (!fuzzyMatch(qTeam, row['团队'])) return false;
-    if (!fuzzyMatch(qShop, row['店铺'])) return false;
-    if (qCountry && !normalize(detectCountry(row['物流渠道'])).includes(qCountry)) return false;
+function checkReady(){document.getElementById('btn-query').disabled=!(orderData.length>0&&stockData.length>0);}
+function doQuery(){
+  const qOrderId=document.getElementById('q-order-id').value,qProductId=document.getElementById('q-product-id').value,
+    qProductName=document.getElementById('q-product-name').value,qSku=document.getElementById('q-sku').value,
+    qCountry=document.getElementById('q-country').value.trim().toLowerCase(),qTeam=document.getElementById('q-team').value,
+    qShop=document.getElementById('q-shop').value,qStatus=document.getElementById('q-status').value;
+  const filteredOrders=orderData.filter(row=>{
+    if(normalize(row['下架状态']??'')!=='未下架&未改派')return false;
+    if(normalize(row['改派标签']??'')!=='是')return false;
+    if(!multiMatch(qOrderId,row['订单编号']))return false;
+    if(!multiMatch(qProductId,row['产品ID']))return false;
+    if(!fuzzyMatch(qProductName,row['品名']))return false;
+    if(!multiMatch(qSku,row['SKU']))return false;
+    if(!fuzzyMatch(qTeam,row['团队']))return false;
+    if(!fuzzyMatch(qShop,row['店铺']))return false;
+    if(qCountry&&!normalize(detectCountry(row['物流渠道'])).includes(qCountry))return false;
     return true;
   });
-  const results = [];
-  for (const order of filteredOrders) {
-    const pid = normalize(order['产品ID']), country = detectCountry(order['物流渠道']), countryNorm = normalize(country);
-    const matchedStock = stockData.filter(s => {
-      if (normalize(s['产品ID']) !== pid) return false;
-      const sLine = normalize(s['线路']??'');
-      if (!sLine.includes(countryNorm) && !countryNorm.includes(sLine)) return false;
-      if (!fuzzyMatch(qStatus, s['最新状态'])) return false;
+  const results=[];
+  for(const order of filteredOrders){
+    const pid=normalize(order['产品ID']),country=detectCountry(order['物流渠道']),countryNorm=normalize(country);
+    const matchedStock=stockData.filter(s=>{
+      if(normalize(s['产品ID'])!==pid)return false;
+      const sLine=normalize(s['线路']??'');
+      if(!sLine.includes(countryNorm)&&!countryNorm.includes(sLine))return false;
+      if(!fuzzyMatch(qStatus,s['最新状态']))return false;
       return true;
     });
-    if (matchedStock.length === 0) {
-      results.push(buildRow(order, null, country));
-    } else {
-      const orderSkuRaw = normalize(order['SKU']??'');
-      const orderSku = orderSkuRaw.includes(':') ? orderSkuRaw.split(':')[0].trim() : orderSkuRaw;
-      const exactMatch = matchedStock.filter(s => normalize(s['sku']??s['SKU']??'') === orderSku);
-      const toShow = exactMatch.length > 0 ? exactMatch : matchedStock;
-      toShow.forEach(s => results.push(buildRow(order, s, country)));
+    if(matchedStock.length===0){results.push(buildRow(order,null,country));}
+    else{
+      const orderSkuRaw=normalize(order['SKU']??'');
+      const orderSku=orderSkuRaw.includes(':')?orderSkuRaw.split(':')[0].trim():orderSkuRaw;
+      const exactMatch=matchedStock.filter(s=>normalize(s['sku']??s['SKU']??'')===orderSku);
+      const toShow=exactMatch.length>0?exactMatch:matchedStock;
+      toShow.forEach(s=>results.push(buildRow(order,s,country)));
     }
   }
   renderResults(results);
 }
-function buildRow(order, stock, country) {
+function buildRow(order,stock,country){
+  const orderSkuRaw=normalize(order['SKU']??'');
+  const orderSku=orderSkuRaw.includes(':')?orderSkuRaw.split(':')[0].trim():orderSkuRaw;
+  const stockSku=normalize(stock?.['sku']??stock?.['SKU']??'');
+  const skuMismatch=stock&&orderSku&&stockSku&&orderSku!==stockSku;
   return {
-    '订单编号': order['订单编号']??'', '下架状态': order['下架状态']??'', '改派标签': order['改派标签']??'',
-    '产品ID': order['产品ID']??'', '品名': order['品名']??'', 'SKU': order['SKU']??'', '规格': order['规格']??'',
-    '物流渠道': order['物流渠道']??'', '识别国家': country, '团队': order['团队']??'', '店铺': order['店铺']??'',
-    '支付时间': order['支付时间']??'', '理论到货时间': order['理论到货时间']??'',
-    '申请批次号': stock?.['申请批次号']??'—', '备货线路': stock?.['线路']??'—',
-    '备货SKU': stock?.['sku']??stock?.['SKU']??'—', '备货SKU名称': stock?.['SKU名称']??'—',
-    'SKU匹配': !stock?'—':(()=>{const raw=normalize(order['SKU']??'');const oSku=raw.includes(':')?raw.split(':')[0].trim():raw;const sSku=normalize(stock?.['sku']??stock?.['SKU']??'');return (oSku&&sSku&&oSku!==sSku)?'同产品ID下其他SKU有备货':'备货在途';})(),
-    '备货申请数量': stock?.['备货申请数量']??'—', '采购数量': stock?.['采购数量']??'—',
-    '批次状态': stock?.['批次状态']??'—', '最新状态': stock?.['最新状态']??'无在途备货',
-    '运输方式': stock?.['运输方式']??'—', '供应商': stock?.['供应商']??'—',
-    '目标仓库': stock?.['目标仓库']??'—', '添加时间': stock?.['添加时间']??'—', '提交采购时间': stock?.['提交采购时间']??'—',
+    '订单编号':order['订单编号']??'','下架状态':order['下架状态']??'','改派标签':order['改派标签']??'',
+    '产品ID':order['产品ID']??'','品名':order['品名']??'','SKU':order['SKU']??'','规格':order['规格']??'',
+    '物流渠道':order['物流渠道']??'','识别国家':country,'团队':order['团队']??'','店铺':order['店铺']??'',
+    '支付时间':order['支付时间']??'','理论到货时间':order['理论到货时间']??'',
+    '申请批次号':stock?.['申请批次号']??'—','备货线路':stock?.['线路']??'—',
+    '备货SKU':stock?.['sku']??stock?.['SKU']??'—','备货SKU名称':stock?.['SKU名称']??'—',
+    'SKU匹配':!stock?'—':skuMismatch?'同产品ID下其他SKU有备货':'备货在途',
+    '备货申请数量':stock?.['备货申请数量']??'—','采购数量':stock?.['采购数量']??'—',
+    '批次状态':stock?.['批次状态']??'—','最新状态':stock?.['最新状态']??'无在途备货',
+    '运输方式':stock?.['运输方式']??'—','供应商':stock?.['供应商']??'—',
+    '目标仓库':stock?.['目标仓库']??'—','添加时间':stock?.['添加时间']??'—','提交采购时间':stock?.['提交采购时间']??'—',
   };
 }
-const RESULT_COLS = ['订单编号','下架状态','改派标签','产品ID','品名','SKU','规格','物流渠道','识别国家','团队','店铺','支付时间','理论到货时间','申请批次号','备货线路','备货SKU','备货SKU名称','SKU匹配','备货申请数量','采购数量','批次状态','最新状态','运输方式','供应商','目标仓库','添加时间','提交采购时间'];
-const COL_SETTINGS_KEY = 'col_settings';
-let colOrder=[...RESULT_COLS], colVisible=Object.fromEntries(RESULT_COLS.map(c=>[c,true])), colFilters={}, colWidths=Object.fromEntries(RESULT_COLS.map(c=>[c,120]));
-function loadColSettings() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(COL_SETTINGS_KEY)??'null');
-    if (!saved) return;
-    const savedCols = new Set(saved.order??[]);
-    const merged = (saved.order??[]).filter(c=>RESULT_COLS.includes(c));
-    RESULT_COLS.forEach(c=>{ if(!savedCols.has(c)) merged.push(c); });
-    colOrder=merged; colVisible=Object.fromEntries(RESULT_COLS.map(c=>[c,saved.visible?.[c]??true])); colWidths=Object.fromEntries(RESULT_COLS.map(c=>[c,saved.widths?.[c]??120]));
-  } catch {}
+const RESULT_COLS=['订单编号','下架状态','改派标签','产品ID','品名','SKU','规格','物流渠道','识别国家','团队','店铺','支付时间','理论到货时间','申请批次号','备货线路','备货SKU','备货SKU名称','SKU匹配','备货申请数量','采购数量','批次状态','最新状态','运输方式','供应商','目标仓库','添加时间','提交采购时间'];
+const COL_SETTINGS_KEY='col_settings';
+let colOrder=[...RESULT_COLS],colVisible=Object.fromEntries(RESULT_COLS.map(c=>[c,true])),colFilters={},colWidths=Object.fromEntries(RESULT_COLS.map(c=>[c,120]));
+function loadColSettings(){
+  try{const saved=JSON.parse(localStorage.getItem(COL_SETTINGS_KEY)??'null');if(!saved)return;
+    const savedCols=new Set(saved.order??[]),merged=(saved.order??[]).filter(c=>RESULT_COLS.includes(c));
+    RESULT_COLS.forEach(c=>{if(!savedCols.has(c))merged.push(c);});
+    colOrder=merged;colVisible=Object.fromEntries(RESULT_COLS.map(c=>[c,saved.visible?.[c]??true]));colWidths=Object.fromEntries(RESULT_COLS.map(c=>[c,saved.widths?.[c]??120]));
+  }catch{}
 }
-function saveColSettings() { localStorage.setItem(COL_SETTINGS_KEY, JSON.stringify({order:colOrder,visible:colVisible,widths:colWidths})); }
+function saveColSettings(){localStorage.setItem(COL_SETTINGS_KEY,JSON.stringify({order:colOrder,visible:colVisible,widths:colWidths}));}
 loadColSettings();
-function getActiveCols() { return colOrder.filter(c=>colVisible[c]); }
-function getFilteredRows() {
-  const rows=window._queryResults??[], active=getActiveCols();
-  return rows.filter(row=>active.every(col=>{ const f=(colFilters[col]??'').trim().toLowerCase(); return !f||String(row[col]??'').toLowerCase().includes(f); }));
-}
-function openColPanel() { document.getElementById('col-panel').style.display='flex'; renderColPanel(); }
-function closeColPanel() { document.getElementById('col-panel').style.display='none'; }
-function renderColPanel() {
+function getActiveCols(){return colOrder.filter(c=>colVisible[c]);}
+function openColPanel(){document.getElementById('col-panel').style.display='flex';renderColPanel();}
+function closeColPanel(){document.getElementById('col-panel').style.display='none';}
+function renderColPanel(){
   const list=document.getElementById('col-panel-list');
-  list.innerHTML=colOrder.map((col,i)=>`<div class="col-item" draggable="true" data-col="${col}" data-idx="${i}"><span class="drag-handle">⠿</span><input type="checkbox" id="chk-${i}" ${colVisible[col]?'checked':''} onchange="colVisible['${col}']=this.checked;refreshTable();saveColSettings();"/><label for="chk-${i}" class="col-label">${col}</label><input type="number" class="col-width-input" value="${colWidths[col]??120}" min="40" max="600" title="列宽(px)" onchange="colWidths['${col}']=Math.max(40,+this.value||120);refreshTable();saveColSettings();"/><span class="col-width-unit">px</span></div>`).join('');
+  list.innerHTML=colOrder.map((col,i)=>`<div class="col-item" draggable="true" data-col="${col}" data-idx="${i}"><span class="drag-handle">⠿</span><input type="checkbox" id="chk-${i}" ${colVisible[col]?'checked':''} onchange="colVisible['${col}']=this.checked;refreshTable();saveColSettings();"/><label for="chk-${i}" class="col-label">${col}</label><input type="number" class="col-width-input" value="${colWidths[col]??120}" min="40" max="600" onchange="colWidths['${col}']=Math.max(40,+this.value||120);refreshTable();saveColSettings();"/><span class="col-width-unit">px</span></div>`).join('');
   let dragIdx=null;
   list.querySelectorAll('.col-item').forEach(el=>{
-    el.addEventListener('dragstart',e=>{ if(e.target.tagName==='INPUT'){e.preventDefault();return;} dragIdx=+el.dataset.idx;el.classList.add('dragging'); });
+    el.addEventListener('dragstart',e=>{if(e.target.tagName==='INPUT'){e.preventDefault();return;}dragIdx=+el.dataset.idx;el.classList.add('dragging');});
     el.addEventListener('dragend',()=>el.classList.remove('dragging'));
     el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag-over');});
     el.addEventListener('dragleave',()=>el.classList.remove('drag-over'));
-    el.addEventListener('drop',()=>{ el.classList.remove('drag-over'); const toIdx=+el.dataset.idx; if(dragIdx===null||dragIdx===toIdx)return; const moved=colOrder.splice(dragIdx,1)[0]; colOrder.splice(toIdx,0,moved); refreshTable();saveColSettings();renderColPanel(); });
+    el.addEventListener('drop',()=>{el.classList.remove('drag-over');const toIdx=+el.dataset.idx;if(dragIdx===null||dragIdx===toIdx)return;const moved=colOrder.splice(dragIdx,1)[0];colOrder.splice(toIdx,0,moved);refreshTable();saveColSettings();renderColPanel();});
   });
 }
-function refreshTable() {
-  const active=getActiveCols(), filtered=getFilteredRows();
-  const thead=document.getElementById('result-thead'), tbody=document.getElementById('result-tbody');
+function getFilteredRows(){
+  const rows=window._queryResults??[],active=getActiveCols();
+  return rows.filter(row=>active.every(col=>{const sel=colFilters[col];if(!sel||sel.size===0)return true;return sel.has(String(row[col]??''));}));
+}
+function getColUniqueValues(col){const rows=window._queryResults??[];return[...new Set(rows.map(r=>String(r[col]??'')))].sort((a,b)=>a.localeCompare(b,'zh'));}
+let openDropdownCol=null;
+function openFilterDropdown(col,thEl){
+  closeFilterDropdown();openDropdownCol=col;
+  const vals=getColUniqueValues(col),selected=colFilters[col]??new Set();
+  const dd=document.createElement('div');dd.className='filter-dropdown';dd.id='filter-dd';
+  const searchInput=document.createElement('input');searchInput.className='filter-dd-search';searchInput.placeholder='搜索…';dd.appendChild(searchInput);
+  const allRow=document.createElement('label');allRow.className='filter-dd-item';
+  const allChk=document.createElement('input');allChk.type='checkbox';allChk.checked=selected.size===0;
+  allChk.addEventListener('change',()=>{if(allChk.checked){colFilters[col]=new Set();refreshTable();closeFilterDropdown();}});
+  allRow.appendChild(allChk);allRow.appendChild(document.createTextNode('（全选）'));dd.appendChild(allRow);
+  const itemsWrap=document.createElement('div');itemsWrap.className='filter-dd-items';
+  function renderItems(filter){
+    itemsWrap.innerHTML='';
+    vals.filter(v=>!filter||v.toLowerCase().includes(filter.toLowerCase())).forEach(v=>{
+      const lbl=document.createElement('label');lbl.className='filter-dd-item';
+      const chk=document.createElement('input');chk.type='checkbox';chk.checked=selected.size===0||selected.has(v);
+      chk.addEventListener('change',()=>{
+        if(colFilters[col]==null||colFilters[col].size===0)colFilters[col]=new Set(vals);
+        if(chk.checked)colFilters[col].add(v);else colFilters[col].delete(v);
+        if(colFilters[col].size===vals.length)colFilters[col]=new Set();
+        allChk.checked=!colFilters[col]||colFilters[col].size===0;refreshTable();
+      });
+      lbl.appendChild(chk);lbl.appendChild(document.createTextNode(v===''?'（空）':v));itemsWrap.appendChild(lbl);
+    });
+  }
+  renderItems('');searchInput.addEventListener('input',()=>renderItems(searchInput.value));dd.appendChild(itemsWrap);
+  document.body.appendChild(dd);
+  const rect=thEl.getBoundingClientRect();
+  dd.style.left=Math.min(rect.left,window.innerWidth-dd.offsetWidth-8)+'px';
+  dd.style.top=(rect.bottom+window.scrollY)+'px';
+  setTimeout(()=>document.addEventListener('mousedown',outsideClick),0);
+}
+function outsideClick(e){const dd=document.getElementById('filter-dd');if(dd&&!dd.contains(e.target)&&!e.target.classList.contains('filter-btn'))closeFilterDropdown();}
+function closeFilterDropdown(){const dd=document.getElementById('filter-dd');if(dd)dd.remove();openDropdownCol=null;document.removeEventListener('mousedown',outsideClick);}
+function refreshTable(){
+  const active=getActiveCols(),filtered=getFilteredRows();
+  const thead=document.getElementById('result-thead'),tbody=document.getElementById('result-tbody');
   document.getElementById('result-count').textContent=filtered.length;
-  thead.innerHTML=`<tr>${active.map(c=>`<th style="width:${colWidths[c]??120}px;min-width:${colWidths[c]??120}px;"><div class="th-inner"><span>${c}</span><span class="col-resizer" data-col="${c}"></span></div></th>`).join('')}</tr><tr class="filter-row">${active.map(c=>`<th style="width:${colWidths[c]??120}px;min-width:${colWidths[c]??120}px;"><input class="col-filter" placeholder="筛选…" value="${(colFilters[c]??'')}" oninput="colFilters['${c}']=this.value;refreshTable();"/></th>`).join('')}</tr>`;
-  tbody.innerHTML=filtered.map(row=>'<tr>'+active.map(col=>{ let val=row[col]??''; if(col==='识别国家')val=`<span class="tag-country">${val}</span>`; if(col==='最新状态')val=`<span class="tag-status">${val}</span>`; if(col==='SKU匹配'&&val==='同产品ID下其他SKU有备货')val=`<span class="tag-warn">${val}</span>`; if(col==='SKU匹配'&&val==='备货在途')val=`<span class="tag-ok">${val}</span>`; return `<td style="width:${colWidths[col]??120}px;max-width:${colWidths[col]??120}px;" title="${String(row[col]??'').replace(/"/g,'&quot;')}">${val}</td>`; }).join('')+'</tr>').join('');
+  thead.innerHTML=`<tr>${active.map(c=>`<th style="width:${colWidths[c]??120}px;min-width:${colWidths[c]??120}px;"><div class="th-inner"><span>${c}</span><button class="filter-btn${(colFilters[c]&&colFilters[c].size>0)?' filter-active':''}" data-col="${c}" title="筛选">▼</button><span class="col-resizer" data-col="${c}"></span></div></th>`).join('')}</tr>`;
+  thead.querySelectorAll('.filter-btn').forEach(btn=>{btn.addEventListener('click',e=>{e.stopPropagation();const col=btn.dataset.col,th=btn.closest('th');if(openDropdownCol===col){closeFilterDropdown();return;}openFilterDropdown(col,th);});});
+  tbody.innerHTML=filtered.map(row=>'<tr>'+active.map(col=>{let val=row[col]??'';if(col==='识别国家')val=`<span class="tag-country">${val}</span>`;if(col==='最新状态')val=`<span class="tag-status">${val}</span>`;if(col==='SKU匹配'&&val==='同产品ID下其他SKU有备货')val=`<span class="tag-warn">${val}</span>`;if(col==='SKU匹配'&&val==='备货在途')val=`<span class="tag-ok">${val}</span>`;return`<td style="width:${colWidths[col]??120}px;max-width:${colWidths[col]??120}px;" title="${String(row[col]??'').replace(/"/g,'&quot;')}">${val}</td>`;}).join('')+'</tr>').join('');
   thead.querySelectorAll('.col-resizer').forEach(resizer=>{
     resizer.addEventListener('mousedown',e=>{
-      e.preventDefault(); const col=resizer.dataset.col, startX=e.clientX, startW=colWidths[col]??120;
-      const onMove=mv=>{ colWidths[col]=Math.max(40,startW+mv.clientX-startX); const idx=active.indexOf(col); document.querySelectorAll('#result-table tr').forEach(tr=>{ const cell=tr.children[idx]; if(cell){cell.style.width=colWidths[col]+'px';cell.style.minWidth=colWidths[col]+'px';cell.style.maxWidth=colWidths[col]+'px';} }); if(document.getElementById('col-panel').style.display==='flex')renderColPanel(); };
-      const onUp=()=>{ saveColSettings(); document.removeEventListener('mousemove',onMove); document.removeEventListener('mouseup',onUp); };
-      document.addEventListener('mousemove',onMove); document.addEventListener('mouseup',onUp);
+      e.preventDefault();const col=resizer.dataset.col,startX=e.clientX,startW=colWidths[col]??120;
+      const onMove=mv=>{colWidths[col]=Math.max(40,startW+mv.clientX-startX);const idx=active.indexOf(col);document.querySelectorAll('#result-table tr').forEach(tr=>{const cell=tr.children[idx];if(cell){cell.style.width=colWidths[col]+'px';cell.style.minWidth=colWidths[col]+'px';cell.style.maxWidth=colWidths[col]+'px';}});if(document.getElementById('col-panel').style.display==='flex')renderColPanel();};
+      const onUp=()=>{saveColSettings();document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp);};
+      document.addEventListener('mousemove',onMove);document.addEventListener('mouseup',onUp);
     });
   });
 }
-function renderResults(rows) {
-  const section=document.getElementById('result-section'), noResult=document.getElementById('no-result');
+function renderResults(rows){
+  const section=document.getElementById('result-section'),noResult=document.getElementById('no-result');
   if(rows.length===0){section.style.display='none';noResult.style.display='block';return;}
-  noResult.style.display='none'; section.style.display='block'; colFilters={}; window._queryResults=rows; refreshTable();
+  noResult.style.display='none';section.style.display='block';colFilters={};closeFilterDropdown();window._queryResults=rows;refreshTable();
 }
-function exportXlsx() {
-  const rows=getFilteredRows(); if(!rows?.length)return;
-  const cols=getActiveCols(), ws=XLSX.utils.json_to_sheet(rows.map(r=>Object.fromEntries(cols.map(c=>[c,r[c]??'']))),{header:cols}), wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'查询结果'); XLSX.writeFile(wb,`备货查询结果_${new Date().toISOString().slice(0,10)}.xlsx`);
+function exportXlsx(){
+  const rows=getFilteredRows();if(!rows?.length)return;
+  const cols=getActiveCols(),ws=XLSX.utils.json_to_sheet(rows.map(r=>Object.fromEntries(cols.map(c=>[c,r[c]??'']))),{header:cols}),wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'查询结果');XLSX.writeFile(wb,`备货查询结果_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
-function exportCsv() {
-  const rows=getFilteredRows(); if(!rows?.length)return;
-  const cols=getActiveCols(), header=cols.join(','), body=rows.map(r=>cols.map(c=>`"${String(r[c]??'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob=new Blob(['\uFEFF'+header+'\n'+body],{type:'text/csv;charset=utf-8'}), a=document.createElement('a');
-  a.href=URL.createObjectURL(blob); a.download=`备货查询结果_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+function exportCsv(){
+  const rows=getFilteredRows();if(!rows?.length)return;
+  const cols=getActiveCols(),header=cols.join(','),body=rows.map(r=>cols.map(c=>`"${String(r[c]??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+header+'\n'+body],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=`备货查询结果_${new Date().toISOString().slice(0,10)}.csv`;a.click();
 }
 document.getElementById('order-file').addEventListener('change',()=>handleFileUpload('order-file','order-status','order-upload-box','order'));
 document.getElementById('stock-file').addEventListener('change',()=>handleFileUpload('stock-file','stock-status','stock-upload-box','stock'));
 document.getElementById('btn-query').addEventListener('click',doQuery);
-document.getElementById('btn-reset').addEventListener('click',()=>{ ['q-order-id','q-product-id','q-product-name','q-sku','q-country','q-team','q-shop','q-status'].forEach(id=>document.getElementById(id).value=''); document.getElementById('result-section').style.display='none'; document.getElementById('no-result').style.display='none'; });
+document.getElementById('btn-reset').addEventListener('click',()=>{['q-order-id','q-product-id','q-product-name','q-sku','q-country','q-team','q-shop','q-status'].forEach(id=>document.getElementById(id).value='');document.getElementById('result-section').style.display='none';document.getElementById('no-result').style.display='none';});
 document.getElementById('btn-export-xlsx').addEventListener('click',exportXlsx);
 document.getElementById('btn-export-csv').addEventListener('click',exportCsv);
-renderHistory('order'); renderHistory('stock');
+renderHistory('order');renderHistory('stock');
   </script>
 </body>
 </html>
