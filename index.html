@@ -51,6 +51,7 @@ tbody td { padding: 9px 14px; border-bottom: 1px solid #f5f5f5; color: #333; ove
 .tag-status { display: inline-block; background: #fff7e6; color: #d46b08; border-radius: 4px; padding: 1px 8px; font-size: 12px; font-weight: 600; }
 .tag-warn { display: inline-block; background: #fff2e8; color: #d4380d; border-radius: 4px; padding: 1px 8px; font-size: 12px; font-weight: 600; }
 .tag-ok { display: inline-block; background: #f6ffed; color: #389e0d; border-radius: 4px; padding: 1px 8px; font-size: 12px; font-weight: 600; }
+.tag-none { display: inline-block; background: #f0f0f0; color: #595959; border-radius: 4px; padding: 1px 8px; font-size: 12px; font-weight: 600; }
 .no-result { text-align: center; padding: 40px; color: #999; font-size: 15px; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 #col-panel { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 1000; align-items: flex-start; justify-content: flex-end; padding: 80px 24px 0 0; }
 #col-panel-inner { background: #fff; border-radius: 10px; width: 300px; max-height: 70vh; display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.18); overflow: hidden; }
@@ -90,18 +91,30 @@ tbody td { padding: 9px 14px; border-bottom: 1px solid #f5f5f5; color: #333; ove
 .filter-dd-item { display: flex; align-items: center; gap: 7px; padding: 5px 12px; font-size: 13px; cursor: pointer; user-select: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .filter-dd-item:hover { background: #f5f7ff; }
 .filter-dd-item input[type="checkbox"] { flex-shrink: 0; cursor: pointer; }
+.logic-switch-bar { display: flex; align-items: center; gap: 10px; background: #fff; border-radius: 10px; padding: 12px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.logic-label { font-size: 14px; color: #555; font-weight: 500; }
+.logic-btn { padding: 6px 20px; border: 1px solid #d9d9d9; border-radius: 6px; background: #f5f5f5; color: #555; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+.logic-btn:hover { border-color: #4f8ef7; color: #4f8ef7; }
+.logic-btn.logic-active { background: #4f8ef7; color: #fff; border-color: #4f8ef7; font-weight: 600; }
+.logic-desc { font-size: 12px; color: #999; margin-left: 4px; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>订单备货查询系统</h1>
+    <div class="logic-switch-bar">
+      <span class="logic-label">当前匹配逻辑：</span>
+      <button id="btn-logic1" class="logic-btn logic-active" onclick="switchLogic(1)">匹配逻辑1</button>
+      <button id="btn-logic2" class="logic-btn" onclick="switchLogic(2)">匹配逻辑2</button>
+      <span id="logic-desc" class="logic-desc">旧版备货表头</span>
+    </div>
     <section class="card" id="upload-section">
       <h2>第一步：上传数据文件</h2>
       <div class="upload-row">
         <div class="upload-col">
           <div class="upload-box" id="order-upload-box">
             <input type="file" id="order-file" accept=".xlsx,.xls,.csv" />
-            <label for="order-file"><span class="icon">📋</span><span class="label">点击上传订单数据</span><span class="hint">.xlsx / .xls / .csv</span></label>
+            <label for="order-file"><span class="icon">�</span><span class="label">点击上传订单数据</span><span class="hint">.xlsx / .xls / .csv</span></label>
             <div class="file-status" id="order-status">未上传</div>
           </div>
           <div class="hist-box"><div class="hist-title">历史记录</div><div id="order-history"></div></div>
@@ -126,7 +139,7 @@ tbody td { padding: 9px 14px; border-bottom: 1px solid #f5f5f5; color: #333; ove
         <div class="field-group"><label>国家/线路</label><input type="text" id="q-country" placeholder="如：泰国、马来、菲律宾" /></div>
         <div class="field-group"><label>团队</label><input type="text" id="q-team" placeholder="模糊匹配" /></div>
         <div class="field-group"><label>店铺</label><input type="text" id="q-shop" placeholder="模糊匹配" /></div>
-        <div class="field-group"><label>备货最新状态</label><input type="text" id="q-status" placeholder="模糊匹配" /></div>
+        <div class="field-group logic1-only"><label>备货最新状态</label><input type="text" id="q-status" placeholder="模糊匹配" /></div>
       </div>
       <div class="query-actions">
         <button id="btn-query" class="btn-primary" disabled>🔍 开始查询</button>
@@ -155,182 +168,89 @@ tbody td { padding: 9px 14px; border-bottom: 1px solid #f5f5f5; color: #333; ove
     </div>
   </div>
   <script>
-const COUNTRY_KEYWORDS = [
-  {keywords:['菲律宾','菲律'],country:'菲律宾'},{keywords:['马来西亚','马来'],country:'马来西亚'},
-  {keywords:['泰国','Lazada改派Flash','lazada改派flash'],country:'泰国'},{keywords:['印尼','印度尼西亚'],country:'印度尼西亚'},
-  {keywords:['越南'],country:'越南'},{keywords:['新加坡'],country:'新加坡'},{keywords:['美国','US','FBA-US'],country:'美国'},
-  {keywords:['英国','UK','FBA-UK'],country:'英国'},{keywords:['德国','DE','FBA-DE'],country:'德国'},
-  {keywords:['日本','JP','FBA-JP'],country:'日本'},{keywords:['澳大利亚','澳洲'],country:'澳大利亚'},
-  {keywords:['法国','FR'],country:'法国'},{keywords:['西班牙','ES'],country:'西班牙'},
-  {keywords:['意大利','IT'],country:'意大利'},{keywords:['加拿大','CA'],country:'加拿大'},
-];
-function detectCountry(channel) {
-  if (!channel) return '';
-  for (const {keywords,country} of COUNTRY_KEYWORDS) for (const kw of keywords) if (channel.includes(kw)) return country;
-  return channel;
-}
+const COUNTRY_KEYWORDS=[{keywords:['菲律宾','菲律'],country:'菲律宾'},{keywords:['马来西亚','马来'],country:'马来西亚'},{keywords:['泰国','Lazada改派Flash','lazada改派flash'],country:'泰国'},{keywords:['印尼','印度尼西亚'],country:'印度尼西亚'},{keywords:['越南'],country:'越南'},{keywords:['新加坡'],country:'新加坡'},{keywords:['美国','US','FBA-US'],country:'美国'},{keywords:['英国','UK','FBA-UK'],country:'英国'},{keywords:['德国','DE','FBA-DE'],country:'德国'},{keywords:['日本','JP','FBA-JP'],country:'日本'},{keywords:['澳大利亚','澳洲'],country:'澳大利亚'},{keywords:['法国','FR'],country:'法国'},{keywords:['西班牙','ES'],country:'西班牙'},{keywords:['意大利','IT'],country:'意大利'},{keywords:['加拿大','CA'],country:'加拿大'}];
+function detectCountry(channel){if(!channel)return'';for(const{keywords,country}of COUNTRY_KEYWORDS)for(const kw of keywords)if(channel.includes(kw))return country;return channel;}
 let orderData=[],stockData=[];
-function readExcel(file) {
-  return new Promise((resolve,reject)=>{
-    const reader=new FileReader();
-    reader.onload=e=>{try{const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});resolve(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}));}catch(err){reject(err);}};
-    reader.onerror=reject; reader.readAsArrayBuffer(file);
-  });
+let currentLogic=parseInt(localStorage.getItem('current_logic')??'1');
+function switchLogic(n){
+  currentLogic=n;localStorage.setItem('current_logic',n);
+  document.getElementById('btn-logic1').classList.toggle('logic-active',n===1);
+  document.getElementById('btn-logic2').classList.toggle('logic-active',n===2);
+  document.getElementById('logic-desc').textContent=n===1?'旧版备货表头':'新版备货表头';
+  document.querySelectorAll('.logic1-only').forEach(el=>el.style.display=n===1?'':'none');
+  document.getElementById('result-section').style.display='none';
+  document.getElementById('no-result').style.display='none';
+  const cols=n===1?RESULT_COLS_L1:RESULT_COLS_L2;
+  colOrder=[...cols];colVisible=Object.fromEntries(cols.map(c=>[c,true]));colWidths=Object.fromEntries(cols.map(c=>[c,120]));
+  loadColSettings();renderHistory('stock');
 }
+const RESULT_COLS_L1=['订单编号','下架状态','改派标签','产品ID','品名','SKU','规格','物流渠道','识别国家','团队','店铺','支付时间','理论到货时间','申请批次号','备货线路','备货SKU','备货SKU名称','SKU匹配','备货申请数量','采购数量','批次状态','最新状态','运输方式','供应商','目标仓库','添加时间','提交采购时间'];
+const RESULT_COLS_L2=['订单编号','下架状态','改派标签','产品ID','品名','SKU','规格','物流渠道','识别国家','团队','店铺','支付时间','理论到货时间','SKU匹配','批次号','备货线路','备货SKU','备货SKU名称','装箱数量','运输方式','提货时间距今时间间隔','备货情况'];
+function readExcel(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=e=>{try{const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});resolve(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}));}catch(err){reject(err);}};reader.onerror=reject;reader.readAsArrayBuffer(file);});}
 function normalize(val){return String(val??'').trim().toLowerCase();}
 function multiMatch(input,fieldVal){if(!input.trim())return true;return input.split(/[,，\s]+/).map(s=>s.trim().toLowerCase()).filter(Boolean).some(t=>normalize(fieldVal).includes(t));}
 function fuzzyMatch(input,fieldVal){if(!input.trim())return true;return normalize(fieldVal).includes(normalize(input));}
-const HISTORY_KEY_ORDER='history_order',HISTORY_KEY_STOCK='history_stock',MAX_HISTORY=10;
+const HISTORY_KEY_ORDER='history_order',HISTORY_KEY_STOCK='history_stock',HISTORY_KEY_STOCK2='history_stock2',MAX_HISTORY=10;
+function getStockKey(){return currentLogic===2?HISTORY_KEY_STOCK2:HISTORY_KEY_STOCK;}
 function saveHistory(target,fileName,rows){
-  const key=target==='order'?HISTORY_KEY_ORDER:HISTORY_KEY_STOCK;
+  const key=target==='order'?HISTORY_KEY_ORDER:getStockKey();
   let list=getHistory(target).filter(h=>h.fileName!==fileName);
   list.unshift({fileName,rows,savedAt:new Date().toLocaleString()});
   if(list.length>MAX_HISTORY)list=list.slice(0,MAX_HISTORY);
-  try{localStorage.setItem(key,JSON.stringify(list));}catch(e){list=list.slice(0,3);try{localStorage.setItem(key,JSON.stringify(list));}catch(_){}}
+  while(list.length>0){try{localStorage.setItem(key,JSON.stringify(list));break;}catch(e){list=list.slice(0,Math.max(1,list.length-1));if(list.length===1){try{localStorage.setItem(key,JSON.stringify(list));}catch(_){localStorage.removeItem(key);}break;}}}
   renderHistory(target);
 }
-function getHistory(target){try{return JSON.parse(localStorage.getItem(target==='order'?HISTORY_KEY_ORDER:HISTORY_KEY_STOCK)??'[]');}catch{return[];}}
-function loadFromHistory(target,idx){
-  const item=getHistory(target)[idx]; if(!item)return;
-  if(target==='order'){orderData=item.rows;document.getElementById('order-status').textContent=`✓ ${item.fileName}（${item.rows.length} 行）`;document.getElementById('order-upload-box').classList.add('loaded');}
-  else{stockData=item.rows;document.getElementById('stock-status').textContent=`✓ ${item.fileName}（${item.rows.length} 行）`;document.getElementById('stock-upload-box').classList.add('loaded');}
-  checkReady();
-}
-function deleteHistory(target,idx){const key=target==='order'?HISTORY_KEY_ORDER:HISTORY_KEY_STOCK;const list=getHistory(target);list.splice(idx,1);localStorage.setItem(key,JSON.stringify(list));renderHistory(target);}
-function renderHistory(target){
-  const list=getHistory(target),el=document.getElementById(`${target}-history`);
-  if(!list.length){el.innerHTML='<div class="hist-empty">暂无历史记录</div>';return;}
-  el.innerHTML=list.map((h,i)=>`<div class="hist-item"><div class="hist-info" onclick="loadFromHistory('${target}',${i})" title="点击加载"><span class="hist-name">${h.fileName}</span><span class="hist-meta">${h.rows.length} 行 · ${h.savedAt}</span></div><button class="hist-del" onclick="deleteHistory('${target}',${i})" title="删除">✕</button></div>`).join('');
-}
-async function handleFileUpload(inputId,statusId,boxId,target){
-  const input=document.getElementById(inputId),file=input.files[0]; if(!file)return;
-  const statusEl=document.getElementById(statusId),boxEl=document.getElementById(boxId);
-  statusEl.textContent='解析中...';
-  try{const rows=await readExcel(file);if(target==='order')orderData=rows;else stockData=rows;statusEl.textContent=`✓ ${file.name}（${rows.length} 行）`;boxEl.classList.add('loaded');saveHistory(target,file.name,rows);checkReady();}
-  catch(e){statusEl.textContent='解析失败，请检查文件格式';console.error(e);}
-}
+function getHistory(target){try{return JSON.parse(localStorage.getItem(target==='order'?HISTORY_KEY_ORDER:getStockKey())??'[]');}catch{return[];}}
+function loadFromHistory(target,idx){const item=getHistory(target)[idx];if(!item)return;if(target==='order'){orderData=item.rows;document.getElementById('order-status').textContent=`✓ ${item.fileName}（${item.rows.length} 行）`;document.getElementById('order-upload-box').classList.add('loaded');}else{stockData=item.rows;document.getElementById('stock-status').textContent=`✓ ${item.fileName}（${item.rows.length} 行）`;document.getElementById('stock-upload-box').classList.add('loaded');}checkReady();}
+function deleteHistory(target,idx){const key=target==='order'?HISTORY_KEY_ORDER:getStockKey();const list=getHistory(target);list.splice(idx,1);localStorage.setItem(key,JSON.stringify(list));renderHistory(target);}
+function renderHistory(target){const list=getHistory(target),el=document.getElementById(`${target}-history`);if(!list.length){el.innerHTML='<div class="hist-empty">暂无历史记录</div>';return;}el.innerHTML=list.map((h,i)=>`<div class="hist-item"><div class="hist-info" onclick="loadFromHistory('${target}',${i})" title="点击加载"><span class="hist-name">${h.fileName}</span><span class="hist-meta">${h.rows.length} 行 · ${h.savedAt}</span></div><button class="hist-del" onclick="deleteHistory('${target}',${i})" title="删除">✕</button></div>`).join('');}
+async function handleFileUpload(inputId,statusId,boxId,target){const input=document.getElementById(inputId),file=input.files[0];if(!file)return;const statusEl=document.getElementById(statusId),boxEl=document.getElementById(boxId);statusEl.textContent='解析中...';try{const rows=await readExcel(file);if(target==='order')orderData=rows;else stockData=rows;statusEl.textContent=`✓ ${file.name}（${rows.length} 行）`;boxEl.classList.add('loaded');saveHistory(target,file.name,rows);checkReady();}catch(e){statusEl.textContent='解析失败，请检查文件格式';console.error(e);}}
 function checkReady(){document.getElementById('btn-query').disabled=!(orderData.length>0&&stockData.length>0);}
-function doQuery(){
-  const qOrderId=document.getElementById('q-order-id').value,qProductId=document.getElementById('q-product-id').value,
-    qProductName=document.getElementById('q-product-name').value,qSku=document.getElementById('q-sku').value,
-    qCountry=document.getElementById('q-country').value.trim().toLowerCase(),qTeam=document.getElementById('q-team').value,
-    qShop=document.getElementById('q-shop').value,qStatus=document.getElementById('q-status').value;
-  const filteredOrders=orderData.filter(row=>{
-    if(normalize(row['下架状态']??'')!=='未下架&未改派')return false;
-    if(normalize(row['改派标签']??'')!=='是')return false;
-    if(!multiMatch(qOrderId,row['订单编号']))return false;
-    if(!multiMatch(qProductId,row['产品ID']))return false;
-    if(!fuzzyMatch(qProductName,row['品名']))return false;
-    if(!multiMatch(qSku,row['SKU']))return false;
-    if(!fuzzyMatch(qTeam,row['团队']))return false;
-    if(!fuzzyMatch(qShop,row['店铺']))return false;
-    if(qCountry&&!normalize(detectCountry(row['物流渠道'])).includes(qCountry))return false;
-    return true;
-  });
+function doQuery(){if(currentLogic===2){doQueryL2();return;}
+  const qOrderId=document.getElementById('q-order-id').value,qProductId=document.getElementById('q-product-id').value,qProductName=document.getElementById('q-product-name').value,qSku=document.getElementById('q-sku').value,qCountry=document.getElementById('q-country').value.trim().toLowerCase(),qTeam=document.getElementById('q-team').value,qShop=document.getElementById('q-shop').value,qStatus=document.getElementById('q-status').value;
+  const filteredOrders=orderData.filter(row=>{if(normalize(row['下架状态']??'')!=='未下架&未改派')return false;if(normalize(row['改派标签']??'')!=='是')return false;if(!multiMatch(qOrderId,row['订单编号']))return false;if(!multiMatch(qProductId,row['产品ID']))return false;if(!fuzzyMatch(qProductName,row['品名']))return false;if(!multiMatch(qSku,row['SKU']))return false;if(!fuzzyMatch(qTeam,row['团队']))return false;if(!fuzzyMatch(qShop,row['店铺']))return false;if(qCountry&&!normalize(detectCountry(row['物流渠道'])).includes(qCountry))return false;return true;});
   const results=[];
-  for(const order of filteredOrders){
-    const pid=normalize(order['产品ID']),country=detectCountry(order['物流渠道']),countryNorm=normalize(country);
-    const matchedStock=stockData.filter(s=>{
-      if(normalize(s['产品ID'])!==pid)return false;
-      const sLine=normalize(s['线路']??'');
-      if(!sLine.includes(countryNorm)&&!countryNorm.includes(sLine))return false;
-      if(!fuzzyMatch(qStatus,s['最新状态']))return false;
-      return true;
-    });
-    if(matchedStock.length===0){results.push(buildRow(order,null,country));}
-    else{
-      const orderSkuRaw=normalize(order['SKU']??'');
-      const orderSku=orderSkuRaw.includes(':')?orderSkuRaw.split(':')[0].trim():orderSkuRaw;
-      const exactMatch=matchedStock.filter(s=>normalize(s['sku']??s['SKU']??'')===orderSku);
-      const toShow=exactMatch.length>0?exactMatch:matchedStock;
-      toShow.forEach(s=>results.push(buildRow(order,s,country)));
+  for(const order of filteredOrders){const pid=normalize(order['产品ID']),country=detectCountry(order['物流渠道']),countryNorm=normalize(country);const matchedStock=stockData.filter(s=>{if(normalize(s['产品ID'])!==pid)return false;const sLine=normalize(s['线路']??'');if(!sLine.includes(countryNorm)&&!countryNorm.includes(sLine))return false;if(!fuzzyMatch(qStatus,s['最新状态']))return false;return true;});if(matchedStock.length===0){results.push(buildRowL1(order,null,country));}else{const raw=normalize(order['SKU']??''),oSku=raw.includes(':')?raw.split(':')[0].trim():raw;const exact=matchedStock.filter(s=>normalize(s['sku']??s['SKU']??'')===oSku);const toShow=exact.length>0?exact:matchedStock;for(const s of toShow)results.push(buildRowL1(order,s,country));}}
+  renderResults(results);
+}
+function doQueryL2(){
+  const qOrderId=document.getElementById('q-order-id').value,qProductId=document.getElementById('q-product-id').value,qProductName=document.getElementById('q-product-name').value,qSku=document.getElementById('q-sku').value,qCountry=document.getElementById('q-country').value.trim().toLowerCase(),qTeam=document.getElementById('q-team').value,qShop=document.getElementById('q-shop').value;
+  const filteredOrders=orderData.filter(row=>{if(normalize(row['下架状态']??'')!=='未下架&未改派')return false;if(normalize(row['改派标签']??'')!=='是')return false;if(!multiMatch(qOrderId,row['订单编号']))return false;if(!multiMatch(qProductId,row['产品ID']))return false;if(!fuzzyMatch(qProductName,row['品名']))return false;if(!multiMatch(qSku,row['SKU']))return false;if(!fuzzyMatch(qTeam,row['团队']))return false;if(!fuzzyMatch(qShop,row['店铺']))return false;if(qCountry&&!normalize(detectCountry(row['物流渠道'])).includes(qCountry))return false;return true;});
+  const pidGroups={};for(const order of filteredOrders){const pid=order['产品ID']??'';if(!pidGroups[pid])pidGroups[pid]=[];pidGroups[pid].push(order);}
+  const results=[];
+  for(const[pid,orders]of Object.entries(pidGroups)){
+    const pidNorm=normalize(pid),country=detectCountry(orders[0]['物流渠道']),countryNorm=normalize(country);
+    const matchedStock=stockData.filter(s=>{if(normalize(s['产品id']??s['产品ID']??'')!==pidNorm)return false;const sLine=normalize(s['线路名称']??'');if(!sLine.includes(countryNorm)&&!countryNorm.includes(sLine))return false;return true;});
+    function buildStockText(stockList){const groupMap=new Map();for(const s of stockList){const rawTime=s['提货时间'];let time='';if(rawTime){const d=rawTime instanceof Date?rawTime:new Date(rawTime);if(!isNaN(d))time=`${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;else time=String(rawTime);}const no=s['吉喵云提单号']??'';const key=`${time}||${no}`;if(!groupMap.has(key))groupMap.set(key,{time,no,codes:[]});const codes=String(s['装箱条码']??'').split(/[\n,，]+/).map(c=>c.trim()).filter(Boolean);groupMap.get(key).codes.push(...codes);}return[...groupMap.values()].map(g=>`${g.time}    ${g.no}\n${g.codes.join('\n')}`).join('\n\n');}
+    const pidStockText={};
+    for(let i=0;i<orders.length;i++){
+      const order=orders[i];const raw=normalize(order['SKU']??''),orderSku=raw.includes(':')?raw.split(':')[0].trim():raw;
+      const exactMatch=matchedStock.filter(s=>normalize(s['sku']??s['SKU']??'')===orderSku);const hasExact=exactMatch.length>0;
+      let skuMatchVal,stockText,stockRef;
+      if(matchedStock.length===0){skuMatchVal='无备货在途';stockText='';stockRef=null;}
+      else if(hasExact){skuMatchVal='备货在途';if(!pidStockText[orderSku])pidStockText[orderSku]=buildStockText(exactMatch);const isFirst=orders.slice(0,i).every(o=>{const r=normalize(o['SKU']??'');return(r.includes(':')?r.split(':')[0].trim():r)!==orderSku;});stockText=isFirst?pidStockText[orderSku]:'';stockRef=exactMatch[0];}
+      else{skuMatchVal='同产品ID下其他SKU有备货';const isFirst=orders.slice(0,i).every(o=>{const r=normalize(o['SKU']??'');return(r.includes(':')?r.split(':')[0].trim():r)!==orderSku;});if(isFirst){if(!pidStockText['_other'])pidStockText['_other']=buildStockText(matchedStock);stockText=pidStockText['_other'];}else{stockText='';}stockRef=matchedStock[0];}
+      results.push(buildRowL2(order,country,skuMatchVal,stockText,stockRef,hasExact));
     }
   }
   renderResults(results);
 }
-function buildRow(order,stock,country){
-  const orderSkuRaw=normalize(order['SKU']??'');
-  const orderSku=orderSkuRaw.includes(':')?orderSkuRaw.split(':')[0].trim():orderSkuRaw;
-  const stockSku=normalize(stock?.['sku']??stock?.['SKU']??'');
-  const skuMismatch=stock&&orderSku&&stockSku&&orderSku!==stockSku;
-  return {
-    '订单编号':order['订单编号']??'','下架状态':order['下架状态']??'','改派标签':order['改派标签']??'',
-    '产品ID':order['产品ID']??'','品名':order['品名']??'','SKU':order['SKU']??'','规格':order['规格']??'',
-    '物流渠道':order['物流渠道']??'','识别国家':country,'团队':order['团队']??'','店铺':order['店铺']??'',
-    '支付时间':order['支付时间']??'','理论到货时间':order['理论到货时间']??'',
-    '申请批次号':stock?.['申请批次号']??'—','备货线路':stock?.['线路']??'—',
-    '备货SKU':stock?.['sku']??stock?.['SKU']??'—','备货SKU名称':stock?.['SKU名称']??'—',
-    'SKU匹配':!stock?'—':skuMismatch?'同产品ID下其他SKU有备货':'备货在途',
-    '备货申请数量':stock?.['备货申请数量']??'—','采购数量':stock?.['采购数量']??'—',
-    '批次状态':stock?.['批次状态']??'—','最新状态':stock?.['最新状态']??'无在途备货',
-    '运输方式':stock?.['运输方式']??'—','供应商':stock?.['供应商']??'—',
-    '目标仓库':stock?.['目标仓库']??'—','添加时间':stock?.['添加时间']??'—','提交采购时间':stock?.['提交采购时间']??'—',
-  };
-}
-const RESULT_COLS=['订单编号','下架状态','改派标签','产品ID','品名','SKU','规格','物流渠道','识别国家','团队','店铺','支付时间','理论到货时间','申请批次号','备货线路','备货SKU','备货SKU名称','SKU匹配','备货申请数量','采购数量','批次状态','最新状态','运输方式','供应商','目标仓库','添加时间','提交采购时间'];
-const COL_SETTINGS_KEY='col_settings';
-let colOrder=[...RESULT_COLS],colVisible=Object.fromEntries(RESULT_COLS.map(c=>[c,true])),colFilters={},colWidths=Object.fromEntries(RESULT_COLS.map(c=>[c,120]));
-function loadColSettings(){
-  try{const saved=JSON.parse(localStorage.getItem(COL_SETTINGS_KEY)??'null');if(!saved)return;
-    const savedCols=new Set(saved.order??[]),merged=(saved.order??[]).filter(c=>RESULT_COLS.includes(c));
-    RESULT_COLS.forEach(c=>{if(!savedCols.has(c))merged.push(c);});
-    colOrder=merged;colVisible=Object.fromEntries(RESULT_COLS.map(c=>[c,saved.visible?.[c]??true]));colWidths=Object.fromEntries(RESULT_COLS.map(c=>[c,saved.widths?.[c]??120]));
-  }catch{}
-}
-function saveColSettings(){localStorage.setItem(COL_SETTINGS_KEY,JSON.stringify({order:colOrder,visible:colVisible,widths:colWidths}));}
+function buildRowL1(order,stock,country){const raw=normalize(order['SKU']??''),oSku=raw.includes(':')?raw.split(':')[0].trim():raw,sSku=normalize(stock?.['sku']??stock?.['SKU']??''),mismatch=stock&&oSku&&sSku&&oSku!==sSku;return{'订单编号':order['订单编号']??'','下架状态':order['下架状态']??'','改派标签':order['改派标签']??'','产品ID':order['产品ID']??'','品名':order['品名']??'','SKU':order['SKU']??'','规格':order['规格']??'','物流渠道':order['物流渠道']??'','识别国家':country,'团队':order['团队']??'','店铺':order['店铺']??'','支付时间':order['支付时间']??'','理论到货时间':order['理论到货时间']??'','申请批次号':stock?.['申请批次号']??'—','备货线路':stock?.['线路']??'—','备货SKU':stock?.['sku']??stock?.['SKU']??'—','备货SKU名称':stock?.['SKU名称']??'—','SKU匹配':!stock?'—':mismatch?'同产品ID下其他SKU有备货':'备货在途','备货申请数量':stock?.['备货申请数量']??'—','采购数量':stock?.['采购数量']??'—','批次状态':stock?.['批次状态']??'—','最新状态':stock?.['最新状态']??'无在途备货','运输方式':stock?.['运输方式']??'—','供应商':stock?.['供应商']??'—','目标仓库':stock?.['目标仓库']??'—','添加时间':stock?.['添加时间']??'—','提交采购时间':stock?.['提交采购时间']??'—'};}
+function buildRowL2(order,country,skuMatchVal,stockText,stockRef,isExact){return{'订单编号':order['订单编号']??'','下架状态':order['下架状态']??'','改派标签':order['改派标签']??'','产品ID':order['产品ID']??'','品名':order['品名']??'','SKU':order['SKU']??'','规格':order['规格']??'','物流渠道':order['物流渠道']??'','识别国家':country,'团队':order['团队']??'','店铺':order['店铺']??'','支付时间':order['支付时间']??'','理论到货时间':order['理论到货时间']??'','SKU匹配':skuMatchVal,'批次号':stockRef?.['批次号']??'—','备货线路':stockRef?.['线路名称']??'—','备货SKU':stockRef?.['sku']??stockRef?.['SKU']??'—','备货SKU名称':stockRef?.['产品名称']??'—','装箱数量':stockRef?.['装箱数量']??'—','运输方式':stockRef?.['运输方式']??'—','提货时间距今时间间隔':stockRef?.['提货时间距今时间间隔']??'—','备货情况':stockText,'_isExact':isExact};}
+function getCOL_SETTINGS_KEY(){return currentLogic===2?'col_settings_l2':'col_settings_l1';}
+function getCurrentCols(){return currentLogic===2?RESULT_COLS_L2:RESULT_COLS_L1;}
+function loadColSettings(){const COLS=getCurrentCols();try{const saved=JSON.parse(localStorage.getItem(getCOL_SETTINGS_KEY())??'null');if(!saved)return;const savedCols=new Set(saved.order??[]),merged=(saved.order??[]).filter(c=>COLS.includes(c));COLS.forEach(c=>{if(!savedCols.has(c))merged.push(c);});colOrder=merged;colVisible=Object.fromEntries(COLS.map(c=>[c,saved.visible?.[c]??true]));colWidths=Object.fromEntries(COLS.map(c=>[c,saved.widths?.[c]??120]));}catch{}}
+function saveColSettings(){localStorage.setItem(getCOL_SETTINGS_KEY(),JSON.stringify({order:colOrder,visible:colVisible,widths:colWidths}));}
+let colOrder=[...getCurrentCols()],colVisible=Object.fromEntries(getCurrentCols().map(c=>[c,true])),colFilters={},colWidths=Object.fromEntries(getCurrentCols().map(c=>[c,120]));
 loadColSettings();
 function getActiveCols(){return colOrder.filter(c=>colVisible[c]);}
 function openColPanel(){document.getElementById('col-panel').style.display='flex';renderColPanel();}
 function closeColPanel(){document.getElementById('col-panel').style.display='none';}
-function renderColPanel(){
-  const list=document.getElementById('col-panel-list');
-  list.innerHTML=colOrder.map((col,i)=>`<div class="col-item" draggable="true" data-col="${col}" data-idx="${i}"><span class="drag-handle">⠿</span><input type="checkbox" id="chk-${i}" ${colVisible[col]?'checked':''} onchange="colVisible['${col}']=this.checked;refreshTable();saveColSettings();"/><label for="chk-${i}" class="col-label">${col}</label><input type="number" class="col-width-input" value="${colWidths[col]??120}" min="40" max="600" onchange="colWidths['${col}']=Math.max(40,+this.value||120);refreshTable();saveColSettings();"/><span class="col-width-unit">px</span></div>`).join('');
-  let dragIdx=null;
-  list.querySelectorAll('.col-item').forEach(el=>{
-    el.addEventListener('dragstart',e=>{if(e.target.tagName==='INPUT'){e.preventDefault();return;}dragIdx=+el.dataset.idx;el.classList.add('dragging');});
-    el.addEventListener('dragend',()=>el.classList.remove('dragging'));
-    el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag-over');});
-    el.addEventListener('dragleave',()=>el.classList.remove('drag-over'));
-    el.addEventListener('drop',()=>{el.classList.remove('drag-over');const toIdx=+el.dataset.idx;if(dragIdx===null||dragIdx===toIdx)return;const moved=colOrder.splice(dragIdx,1)[0];colOrder.splice(toIdx,0,moved);refreshTable();saveColSettings();renderColPanel();});
-  });
-}
-function getFilteredRows(){
-  const rows=window._queryResults??[],active=getActiveCols();
-  return rows.filter(row=>active.every(col=>{const sel=colFilters[col];if(!sel||sel.size===0)return true;return sel.has(String(row[col]??''));}));
-}
+function renderColPanel(){const list=document.getElementById('col-panel-list');list.innerHTML=colOrder.map((col,i)=>`<div class="col-item" draggable="true" data-col="${col}" data-idx="${i}"><span class="drag-handle">⠿</span><input type="checkbox" id="chk-${i}" ${colVisible[col]?'checked':''} onchange="colVisible['${col}']=this.checked;refreshTable();saveColSettings();"/><label for="chk-${i}" class="col-label">${col}</label><input type="number" class="col-width-input" value="${colWidths[col]??120}" min="40" max="600" onchange="colWidths['${col}']=Math.max(40,+this.value||120);refreshTable();saveColSettings();"/><span class="col-width-unit">px</span></div>`).join('');let dragIdx=null;list.querySelectorAll('.col-item').forEach(el=>{el.addEventListener('dragstart',e=>{if(e.target.tagName==='INPUT'){e.preventDefault();return;}dragIdx=+el.dataset.idx;el.classList.add('dragging');});el.addEventListener('dragend',()=>el.classList.remove('dragging'));el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag-over');});el.addEventListener('dragleave',()=>el.classList.remove('drag-over'));el.addEventListener('drop',()=>{el.classList.remove('drag-over');const toIdx=+el.dataset.idx;if(dragIdx===null||dragIdx===toIdx)return;const moved=colOrder.splice(dragIdx,1)[0];colOrder.splice(toIdx,0,moved);refreshTable();saveColSettings();renderColPanel();});});}
+function getFilteredRows(){const rows=window._queryResults??[],active=getActiveCols();return rows.filter(row=>active.every(col=>{const sel=colFilters[col];if(!sel||sel.size===0)return true;return sel.has(String(row[col]??''));}));}
 function getColUniqueValues(col){const rows=window._queryResults??[];return[...new Set(rows.map(r=>String(r[col]??'')))].sort((a,b)=>a.localeCompare(b,'zh'));}
 let openDropdownCol=null;
-function openFilterDropdown(col,thEl){
-  closeFilterDropdown();openDropdownCol=col;
-  const vals=getColUniqueValues(col),selected=colFilters[col]??new Set();
-  const dd=document.createElement('div');dd.className='filter-dropdown';dd.id='filter-dd';
-  const searchInput=document.createElement('input');searchInput.className='filter-dd-search';searchInput.placeholder='搜索…';dd.appendChild(searchInput);
-  const allRow=document.createElement('label');allRow.className='filter-dd-item';
-  const allChk=document.createElement('input');allChk.type='checkbox';allChk.checked=selected.size===0;
-  allChk.addEventListener('change',()=>{if(allChk.checked){colFilters[col]=new Set();refreshTable();closeFilterDropdown();}});
-  allRow.appendChild(allChk);allRow.appendChild(document.createTextNode('（全选）'));dd.appendChild(allRow);
-  const itemsWrap=document.createElement('div');itemsWrap.className='filter-dd-items';
-  function renderItems(filter){
-    itemsWrap.innerHTML='';
-    vals.filter(v=>!filter||v.toLowerCase().includes(filter.toLowerCase())).forEach(v=>{
-      const lbl=document.createElement('label');lbl.className='filter-dd-item';
-      const chk=document.createElement('input');chk.type='checkbox';chk.checked=selected.size===0||selected.has(v);
-      chk.addEventListener('change',()=>{
-        if(colFilters[col]==null||colFilters[col].size===0)colFilters[col]=new Set(vals);
-        if(chk.checked)colFilters[col].add(v);else colFilters[col].delete(v);
-        if(colFilters[col].size===vals.length)colFilters[col]=new Set();
-        allChk.checked=!colFilters[col]||colFilters[col].size===0;refreshTable();
-      });
-      lbl.appendChild(chk);lbl.appendChild(document.createTextNode(v===''?'（空）':v));itemsWrap.appendChild(lbl);
-    });
-  }
-  renderItems('');searchInput.addEventListener('input',()=>renderItems(searchInput.value));dd.appendChild(itemsWrap);
-  document.body.appendChild(dd);
-  const rect=thEl.getBoundingClientRect();
-  dd.style.left=Math.min(rect.left,window.innerWidth-dd.offsetWidth-8)+'px';
-  dd.style.top=(rect.bottom+window.scrollY)+'px';
-  setTimeout(()=>document.addEventListener('mousedown',outsideClick),0);
-}
+function openFilterDropdown(col,thEl){closeFilterDropdown();openDropdownCol=col;const vals=getColUniqueValues(col),selected=colFilters[col]??new Set();const dd=document.createElement('div');dd.className='filter-dropdown';dd.id='filter-dd';const searchInput=document.createElement('input');searchInput.className='filter-dd-search';searchInput.placeholder='搜索…';dd.appendChild(searchInput);const allRow=document.createElement('label');allRow.className='filter-dd-item';const allChk=document.createElement('input');allChk.type='checkbox';allChk.checked=selected.size===0;allChk.addEventListener('change',()=>{if(allChk.checked){colFilters[col]=new Set();refreshTable();closeFilterDropdown();}});allRow.appendChild(allChk);allRow.appendChild(document.createTextNode('（全选）'));dd.appendChild(allRow);const itemsWrap=document.createElement('div');itemsWrap.className='filter-dd-items';function renderItems(filter){itemsWrap.innerHTML='';vals.filter(v=>!filter||v.toLowerCase().includes(filter.toLowerCase())).forEach(v=>{const lbl=document.createElement('label');lbl.className='filter-dd-item';const chk=document.createElement('input');chk.type='checkbox';chk.checked=selected.size===0||selected.has(v);chk.addEventListener('change',()=>{if(colFilters[col]==null||colFilters[col].size===0)colFilters[col]=new Set(vals);if(chk.checked)colFilters[col].add(v);else colFilters[col].delete(v);if(colFilters[col].size===vals.length)colFilters[col]=new Set();allChk.checked=!colFilters[col]||colFilters[col].size===0;refreshTable();});lbl.appendChild(chk);lbl.appendChild(document.createTextNode(v===''?'（空）':v));itemsWrap.appendChild(lbl);});}renderItems('');searchInput.addEventListener('input',()=>renderItems(searchInput.value));dd.appendChild(itemsWrap);document.body.appendChild(dd);const rect=thEl.getBoundingClientRect();dd.style.left=Math.min(rect.left,window.innerWidth-dd.offsetWidth-8)+'px';dd.style.top=(rect.bottom+window.scrollY)+'px';setTimeout(()=>document.addEventListener('mousedown',outsideClick),0);}
 function outsideClick(e){const dd=document.getElementById('filter-dd');if(dd&&!dd.contains(e.target)&&!e.target.classList.contains('filter-btn'))closeFilterDropdown();}
 function closeFilterDropdown(){const dd=document.getElementById('filter-dd');if(dd)dd.remove();openDropdownCol=null;document.removeEventListener('mousedown',outsideClick);}
 function refreshTable(){
@@ -339,32 +259,34 @@ function refreshTable(){
   document.getElementById('result-count').textContent=filtered.length;
   thead.innerHTML=`<tr>${active.map(c=>`<th style="width:${colWidths[c]??120}px;min-width:${colWidths[c]??120}px;"><div class="th-inner"><span>${c}</span><button class="filter-btn${(colFilters[c]&&colFilters[c].size>0)?' filter-active':''}" data-col="${c}" title="筛选">▼</button><span class="col-resizer" data-col="${c}"></span></div></th>`).join('')}</tr>`;
   thead.querySelectorAll('.filter-btn').forEach(btn=>{btn.addEventListener('click',e=>{e.stopPropagation();const col=btn.dataset.col,th=btn.closest('th');if(openDropdownCol===col){closeFilterDropdown();return;}openFilterDropdown(col,th);});});
-  tbody.innerHTML=filtered.map(row=>'<tr>'+active.map(col=>{let val=row[col]??'';if(col==='识别国家')val=`<span class="tag-country">${val}</span>`;if(col==='最新状态')val=`<span class="tag-status">${val}</span>`;if(col==='SKU匹配'&&val==='同产品ID下其他SKU有备货')val=`<span class="tag-warn">${val}</span>`;if(col==='SKU匹配'&&val==='备货在途')val=`<span class="tag-ok">${val}</span>`;return`<td style="width:${colWidths[col]??120}px;max-width:${colWidths[col]??120}px;" title="${String(row[col]??'').replace(/"/g,'&quot;')}">${val}</td>`;}).join('')+'</tr>').join('');
-  thead.querySelectorAll('.col-resizer').forEach(resizer=>{
-    resizer.addEventListener('mousedown',e=>{
-      e.preventDefault();const col=resizer.dataset.col,startX=e.clientX,startW=colWidths[col]??120;
-      const onMove=mv=>{colWidths[col]=Math.max(40,startW+mv.clientX-startX);const idx=active.indexOf(col);document.querySelectorAll('#result-table tr').forEach(tr=>{const cell=tr.children[idx];if(cell){cell.style.width=colWidths[col]+'px';cell.style.minWidth=colWidths[col]+'px';cell.style.maxWidth=colWidths[col]+'px';}});if(document.getElementById('col-panel').style.display==='flex')renderColPanel();};
-      const onUp=()=>{saveColSettings();document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp);};
-      document.addEventListener('mousemove',onMove);document.addEventListener('mouseup',onUp);
-    });
-  });
+  if(currentLogic===2){
+    const stockColIdx=active.indexOf('备货情况'),rowSpanMap=new Array(filtered.length).fill(1),rowSkipStock=new Array(filtered.length).fill(false);
+    if(stockColIdx>=0){let i=0;while(i<filtered.length){const pid=filtered[i]['产品ID'],isExact=filtered[i]['_isExact'];if(isExact){let j=i+1;while(j<filtered.length&&filtered[j]['产品ID']===pid&&filtered[j]['_isExact'])j++;rowSpanMap[i]=j-i;for(let k=i+1;k<j;k++)rowSkipStock[k]=true;i=j;}else{i++;}}}
+    let html='';
+    for(let ri=0;ri<filtered.length;ri++){const row=filtered[ri];html+='<tr>';for(const col of active){if(col==='备货情况'&&rowSkipStock[ri])continue;let val=String(row[col]??'');if(col==='识别国家')val=`<span class="tag-country">${val}</span>`;if(col==='SKU匹配'&&val==='同产品ID下其他SKU有备货')val=`<span class="tag-warn">${val}</span>`;if(col==='SKU匹配'&&val==='备货在途')val=`<span class="tag-ok">${val}</span>`;if(col==='SKU匹配'&&val==='无备货在途')val=`<span class="tag-none">${val}</span>`;const rs=col==='备货情况'?rowSpanMap[ri]:1,rsAttr=rs>1?` rowspan="${rs}"`:'',vAlign=rs>1?' vertical-align:middle;':'',displayVal=val.replace(/\n/g,'<br>');html+=`<td${rsAttr} style="width:${colWidths[col]??120}px;max-width:${colWidths[col]??120}px;${vAlign}white-space:pre-wrap;" title="${String(row[col]??'').replace(/"/g,'&quot;')}">${displayVal}</td>`;}html+='</tr>';}
+    tbody.innerHTML=html;
+  }else{
+    tbody.innerHTML=filtered.map(row=>'<tr>'+active.map(col=>{let val=row[col]??'';if(col==='识别国家')val=`<span class="tag-country">${val}</span>`;if(col==='最新状态')val=`<span class="tag-status">${val}</span>`;if(col==='SKU匹配'&&val==='同产品ID下其他SKU有备货')val=`<span class="tag-warn">${val}</span>`;if(col==='SKU匹配'&&val==='备货在途')val=`<span class="tag-ok">${val}</span>`;if(col==='SKU匹配'&&val==='—')val=`<span class="tag-none">${val}</span>`;return`<td style="width:${colWidths[col]??120}px;max-width:${colWidths[col]??120}px;" title="${String(row[col]??'').replace(/"/g,'&quot;')}">${val}</td>`;}).join('')+'</tr>').join('');
+  }
+  thead.querySelectorAll('.col-resizer').forEach(resizer=>{resizer.addEventListener('mousedown',e=>{e.preventDefault();const col=resizer.dataset.col,startX=e.clientX,startW=colWidths[col]??120;const onMove=mv=>{colWidths[col]=Math.max(40,startW+mv.clientX-startX);const idx=active.indexOf(col);document.querySelectorAll('#result-table tr').forEach(tr=>{const cell=tr.children[idx];if(cell){cell.style.width=colWidths[col]+'px';cell.style.minWidth=colWidths[col]+'px';cell.style.maxWidth=colWidths[col]+'px';}});if(document.getElementById('col-panel').style.display==='flex')renderColPanel();};const onUp=()=>{saveColSettings();document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp);};document.addEventListener('mousemove',onMove);document.addEventListener('mouseup',onUp);});});
 }
-function renderResults(rows){
-  const section=document.getElementById('result-section'),noResult=document.getElementById('no-result');
-  if(rows.length===0){section.style.display='none';noResult.style.display='block';return;}
-  noResult.style.display='none';section.style.display='block';colFilters={};closeFilterDropdown();window._queryResults=rows;refreshTable();
-}
+function renderResults(rows){const section=document.getElementById('result-section'),noResult=document.getElementById('no-result');if(rows.length===0){section.style.display='none';noResult.style.display='block';return;}noResult.style.display='none';section.style.display='block';colFilters={};closeFilterDropdown();window._queryResults=rows;refreshTable();}
 function exportXlsx(){
   const rows=getFilteredRows();if(!rows?.length)return;
-  const cols=getActiveCols(),ws=XLSX.utils.json_to_sheet(rows.map(r=>Object.fromEntries(cols.map(c=>[c,r[c]??'']))),{header:cols}),wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'查询结果');XLSX.writeFile(wb,`备货查询结果_${new Date().toISOString().slice(0,10)}.xlsx`);
+  const cols=getActiveCols().filter(c=>c!=='_isExact'),wb=XLSX.utils.book_new();
+  if(currentLogic===2&&cols.includes('备货情况')){
+    const stockColIdx=cols.indexOf('备货情况'),aoa=[cols],merges=[];let ri=1;
+    const rowSpanMap=new Array(rows.length).fill(1),rowSkipStock=new Array(rows.length).fill(false);
+    let i=0;while(i<rows.length){const pid=rows[i]['产品ID'],isExact=rows[i]['_isExact'];if(isExact){let j=i+1;while(j<rows.length&&rows[j]['产品ID']===pid&&rows[j]['_isExact'])j++;rowSpanMap[i]=j-i;for(let k=i+1;k<j;k++)rowSkipStock[k]=true;i=j;}else{i++;}}
+    for(let idx=0;idx<rows.length;idx++){const row=rows[idx],dataRow=cols.map(c=>rowSkipStock[idx]&&c==='备货情况'?'':(row[c]??''));aoa.push(dataRow);if(rowSpanMap[idx]>1)merges.push({s:{r:ri,c:stockColIdx},e:{r:ri+rowSpanMap[idx]-1,c:stockColIdx}});ri++;}
+    const ws=XLSX.utils.aoa_to_sheet(aoa);ws['!merges']=merges;
+    for(let r=0;r<aoa.length;r++){const cellRef=XLSX.utils.encode_cell({r,c:stockColIdx});if(!ws[cellRef])continue;ws[cellRef].s={alignment:{vertical:'center',wrapText:true}};}
+    ws['!cols']=cols.map((c,i)=>({wch:i===stockColIdx?60:20}));
+    XLSX.utils.book_append_sheet(wb,ws,'查询结果');
+  }else{const ws=XLSX.utils.json_to_sheet(rows.map(r=>Object.fromEntries(cols.map(c=>[c,r[c]??'']))),{header:cols});XLSX.utils.book_append_sheet(wb,ws,'查询结果');}
+  XLSX.writeFile(wb,`备货查询结果_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
-function exportCsv(){
-  const rows=getFilteredRows();if(!rows?.length)return;
-  const cols=getActiveCols(),header=cols.join(','),body=rows.map(r=>cols.map(c=>`"${String(r[c]??'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob=new Blob(['\uFEFF'+header+'\n'+body],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);a.download=`备货查询结果_${new Date().toISOString().slice(0,10)}.csv`;a.click();
-}
+function exportCsv(){const rows=getFilteredRows();if(!rows?.length)return;const cols=getActiveCols().filter(c=>c!=='_isExact'),header=cols.join(','),body=rows.map(r=>cols.map(c=>`"${String(r[c]??'').replace(/"/g,'""')}"`).join(',')).join('\n');const blob=new Blob(['\uFEFF'+header+'\n'+body],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`备货查询结果_${new Date().toISOString().slice(0,10)}.csv`;a.click();}
 document.getElementById('order-file').addEventListener('change',()=>handleFileUpload('order-file','order-status','order-upload-box','order'));
 document.getElementById('stock-file').addEventListener('change',()=>handleFileUpload('stock-file','stock-status','stock-upload-box','stock'));
 document.getElementById('btn-query').addEventListener('click',doQuery);
@@ -372,6 +294,7 @@ document.getElementById('btn-reset').addEventListener('click',()=>{['q-order-id'
 document.getElementById('btn-export-xlsx').addEventListener('click',exportXlsx);
 document.getElementById('btn-export-csv').addEventListener('click',exportCsv);
 renderHistory('order');renderHistory('stock');
+switchLogic(currentLogic);
   </script>
 </body>
 </html>
