@@ -294,7 +294,13 @@ document.getElementById('btn-reset').addEventListener('click',()=>{['q-order-id'
 document.getElementById('btn-export-xlsx').addEventListener('click',exportXlsx);
 document.getElementById('btn-export-csv').addEventListener('click',exportCsv);
 renderHistory('order');renderHistory('stock');
-switchLogic(currentLogic);
+document.getElementById('btn-logic1').classList.toggle('logic-active',currentLogic===1);
+document.getElementById('btn-logic2').classList.toggle('logic-active',currentLogic===2);
+document.getElementById('logic-desc').textContent=currentLogic===1?'旧版备货表头':'新版备货表头';
+document.querySelectorAll('.logic1-only').forEach(el=>el.style.display=currentLogic===1?'':'none');
+const _initCols=getCurrentCols();
+colOrder=[..._initCols];colVisible=Object.fromEntries(_initCols.map(c=>[c,true]));colWidths=Object.fromEntries(_initCols.map(c=>[c,120]));
+loadColSettings();
   </script>
 </body>
 </html>
